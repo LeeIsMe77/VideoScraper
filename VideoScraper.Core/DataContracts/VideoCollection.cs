@@ -9,7 +9,6 @@
 	using System.Reflection;
 	using System.Runtime.Serialization;
 	using Common;
-
 	#endregion
 
 	[CollectionDataContract]

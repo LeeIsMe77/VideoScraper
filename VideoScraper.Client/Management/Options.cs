@@ -12,29 +12,29 @@
 		#region Static
 
 		/// <summary>
-		/// Shows the <seealso cref="Options"/> form as a child of the parent form.
+		/// Shows the <seealso cref="Options" /> form as a child of the parent form.
 		/// </summary>
 		/// <param name="owner">The owner.</param>
-		/// <param name="videoScraperManager">The video scraper manager.</param>
-		public static void Show(IWin32Window owner, VideoScraperManager videoScraperManager) {
-			using (var form = new Options(videoScraperManager)) {
+		/// <param name="configurationManager">The video scraper manager.</param>
+		public static void Show(IWin32Window owner, ConfigurationManager configurationManager) {
+			using (var form = new Options(configurationManager)) {
 				form.ShowDialog(owner);
 			}
 		}
 
 		#endregion
 
-		private readonly VideoScraperManager _videoScraperManager;
+		private readonly ConfigurationManager _configurationManager;
 
 		#region Constructor
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Options"/> class.
 		/// </summary>
-		/// <param name="videoScraperManager">The video scraper manager.</param>
-		private Options(VideoScraperManager videoScraperManager) {
+		/// <param name="configurationManager">The configuration manager.</param>
+		private Options(ConfigurationManager configurationManager) {
 			InitializeComponent();
-			_videoScraperManager = videoScraperManager;
+			_configurationManager = configurationManager;
 		}
 
 		#endregion
@@ -47,7 +47,7 @@
 		/// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
 		protected override void OnLoad(EventArgs e) {
 			base.OnLoad(e);
-			this.apiKey.Text = _videoScraperManager.APIKey;
+			this.apiKey.Text = _configurationManager.APIKey;
 		}
 
 		#endregion
@@ -69,7 +69,7 @@
 		/// <param name="sender">The source of the event.</param>
 		/// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
 		private void ok_Click(object sender, EventArgs e) {
-			_videoScraperManager.APIKey = this.apiKey.Text;
+			_configurationManager.APIKey = this.apiKey.Text;
 			this.DialogResult = DialogResult.OK;
 		}
 

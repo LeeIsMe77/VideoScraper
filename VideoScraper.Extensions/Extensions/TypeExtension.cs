@@ -18,7 +18,8 @@
 		/// <param name="thisType">Type of the this.</param>
 		/// <param name="inherit">if set to <c>true</c> [inherit].</param>
 		/// <returns>TAttribute.</returns>
-		public static TAttribute GetCustomAttribute<TAttribute>(this Type thisType, bool inherit = false) where TAttribute : Attribute {
+		public static TAttribute GetCustomAttribute<TAttribute>(this Type thisType, bool inherit = false) 
+			where TAttribute : Attribute {
 			return thisType
 				.GetCustomAttributes(typeof(TAttribute), inherit)
 				.FirstOrDefault() as TAttribute;

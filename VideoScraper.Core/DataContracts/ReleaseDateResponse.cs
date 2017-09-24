@@ -3,7 +3,6 @@
 	#region Directives
 	using System;
 	using System.Runtime.Serialization;
-
 	#endregion
 
 	[DataContract]

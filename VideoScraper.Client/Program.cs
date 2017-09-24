@@ -3,6 +3,7 @@
 	#region Directives
 	using System;
 	using System.Diagnostics;
+	using Core.Common;
 	using Management;
 	#endregion
 
@@ -16,8 +17,8 @@
 		[STAThread]
 		public static int Main(string[] args) {
 			try {
-
-				using (var form = new Search()) {
+				
+				using (var form = new Search(new ConfigurationManager())) {
 					form.ShowDialog();
 				}
 

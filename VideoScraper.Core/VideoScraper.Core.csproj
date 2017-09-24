@@ -48,16 +48,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\ConfigurationManager.cs" />
     <Compile Include="Common\DataGridViewDisplayAttribute.cs" />
     <Compile Include="Common\DynamicPropertyDescriptor.cs" />
-    <Compile Include="Common\VideoScraperManager.cs" />
+    <Compile Include="Common\RequestManager.cs" />
     <Compile Include="Common\RequestMethod.cs" />
     <Compile Include="Common\RequestQuery.cs" />
     <Compile Include="Common\RequestQueryCollection.cs" />
     <Compile Include="Common\SearchPathAttribute.cs" />
     <Compile Include="DataContracts\Episode.cs" />
     <Compile Include="DataContracts\Person.cs" />
-    <Compile Include="DataContracts\BelongsToCollection.cs" />
+    <Compile Include="DataContracts\Collection.cs" />
     <Compile Include="DataContracts\NameIDPair.cs" />
     <Compile Include="DataContracts\ProductionCountry.cs" />
     <Compile Include="DataContracts\RegionReleaseDate.cs" />

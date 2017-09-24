@@ -3,12 +3,11 @@
 	#region Directives
 	using System;
 	using System.Runtime.Serialization;
-
 	#endregion
 
 	[DataContract]
 	[Serializable]
-	public class BelongsToCollection {
+	public class Collection {
 
 		[DataMember(Name = @"id", IsRequired = false)]
 		public int ID { get; set; }

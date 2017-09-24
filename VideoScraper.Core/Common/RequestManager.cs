@@ -7,19 +7,18 @@
 	using System.Net;
 	using System.Reflection;
 	using System.Runtime.Serialization.Json;
-	using System.Xml.Linq;
 	using DataContracts;
 
 	#endregion
 
-	public class VideoScraperManager {
+	public class RequestManager {
 
 		#region Constants
 		private const string CONFIGURATION_FILE_NAME = "VideoScraper.xml";
-		private const int CONFIGURATION_VERSION = 1;
 		private const string URL_HOST = @"api.themoviedb.org";
 		private const string URL_SCHEME = @"https";
 		private const int URL_VERSION = 3;
+		private const string REQUEST_QUERY_NAME_API_KEY = @"api_key";
 		#endregion
 
 		#region Static
@@ -34,6 +33,10 @@
 		/// <param name="requestQueries">The request queries.</param>
 		/// <returns>HttpWebRequest.</returns>
 		private static HttpWebRequest CreateRequest(RequestMethod requestMethod, string path, RequestQueryCollection requestQueries) {
+
+			if (string.IsNullOrWhiteSpace(requestQueries[REQUEST_QUERY_NAME_API_KEY]?.QueryValue)) {
+				throw new VideoScraperException(null, @"The API key cannot be blank.");
+			}
 
 			var uriBuilder = new UriBuilder();
 			uriBuilder.Scheme = URL_SCHEME;
@@ -89,94 +92,40 @@
 
 		#endregion
 
+		#region Properties
+		private readonly ConfigurationManager _configurationManager;
+
+		#region APIRequestQuery
+
+		private RequestQuery _apiRequestQuery;
+
+		/// <summary>
+		/// Gets the API request query.
+		/// </summary>
+		/// <value>The API request query.</value>
+		public RequestQuery APIRequestQuery {
+			get { return _apiRequestQuery ?? (_apiRequestQuery = new RequestQuery(REQUEST_QUERY_NAME_API_KEY, _configurationManager.APIKey)); }
+		}
+
+		#endregion
+
+		#endregion
+
 		#region Constructor
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="VideoScraperManager"/> class.
+		/// Initializes a new instance of the <see cref="RequestManager"/> class.
 		/// </summary>
-		public VideoScraperManager() {
-			this.Initialize();
+		public RequestManager(ConfigurationManager configurationManager) {
+			_configurationManager = configurationManager;
 		}
-
-		#endregion
-
-		#region Properties
-
-		#region APIKey
-
-		/// <summary>
-		/// Gets or sets the API key.
-		/// </summary>
-		/// <value>The API key.</value>
-		public string APIKey { get; set; }
-
-		#endregion
-
-		#region ConfigurationFilePath
-
-		private string _configurationFileDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create)}\\Lee Gurley\\Video Scraper\\{CONFIGURATION_VERSION}";
-
-		/// <summary>
-		/// Gets the configuration file path.
-		/// </summary>
-		/// <value>The configuration file path.</value>
-		public string ConfigurationFilePath {
-			get { return Path.Combine(_configurationFileDirectory, CONFIGURATION_FILE_NAME); }
-		}
-
-		#endregion
 
 		#endregion
 
 		#region Methods
 
-		#region Configuration
-
-		/// <summary>
-		/// Loads the configuration.
-		/// </summary>
-		private void LoadConfiguration() {
-			if (!File.Exists(this.ConfigurationFilePath)) return;
-			try {
-				var configuration = XElement.Load(this.ConfigurationFilePath);
-				this.APIKey = configuration.SafeAttributeValue(nameof(this.APIKey), this.APIKey);
-			}
-			catch { }
-		}
-
-		/// <summary>
-		/// Saves the configuration.
-		/// </summary>
-		public void SaveConfiguration() {
-			try {
-
-				if (!Directory.Exists(_configurationFileDirectory)) {
-					Directory.CreateDirectory(_configurationFileDirectory);
-				}
-
-				new XElement(
-					nameof(VideoScraperManager), 
-					new XAttribute(nameof(VideoScraperManager.APIKey), this.APIKey)
-					)
-					.Save(this.ConfigurationFilePath, SaveOptions.None);
-			}
-			catch { }
-		}
-
-		#endregion
-
 		#region Data Retrieval
-
-		/// <summary>
-		/// Creates the request token.
-		/// </summary>
-		/// <returns>RequestToken.</returns>
-		public RequestToken GetRequestToken() {
-			var requestQueries = new RequestQueryCollection { new RequestQuery(@"api_key", this.APIKey) };
-			var request = VideoScraperManager.CreateRequest(RequestMethod.GET, @"authentication/token/new", requestQueries);
-			return VideoScraperManager.GetResponse<RequestToken>(request);
-		}
-
+		
 		/// <summary>
 		/// Searches the specified movie name.
 		/// </summary>
@@ -197,14 +146,14 @@
 
 			while (true) {
 				var requestQueries = new RequestQueryCollection {
-					new RequestQuery(@"api_key", this.APIKey),
+					this.APIRequestQuery,
 					new RequestQuery(@"query", movieName),
 					new RequestQuery(@"page", pageNumber.ToString()),
 					new RequestQuery(@"include_adult", bool.TrueString.ToLower())
 				};
 
-				var request = VideoScraperManager.CreateRequest(RequestMethod.GET, $@"search/{searchPath}", requestQueries);
-				var response = VideoScraperManager.GetResponse<SearchResponse<TVideo>>(request);
+				var request = RequestManager.CreateRequest(RequestMethod.GET, $@"search/{searchPath}", requestQueries);
+				var response = RequestManager.GetResponse<SearchResponse<TVideo>>(request);
 				videos.AddRange(response.Results);
 				if (pageNumber >= response.TotalPages || response.Results.Count == 0) break;
 				pageNumber++;
@@ -228,28 +177,21 @@
 				throw new Exception($@"The video type {videoType.Name} does not have a search path.");
 			}
 
-			var requestQueries = new RequestQueryCollection { new RequestQuery(@"api_key", this.APIKey) };
-			var request = VideoScraperManager.CreateRequest(RequestMethod.GET, $@"{searchPath}/{video.ID}", requestQueries);
-			var response = VideoScraperManager.GetResponse<TVideo>(request);
+			var requestQueries = new RequestQueryCollection { this.APIRequestQuery };
+			var request = RequestManager.CreateRequest(RequestMethod.GET, $@"{searchPath}/{video.ID}", requestQueries);
+			var response = RequestManager.GetResponse<TVideo>(request);
 			response.DetailsRetrieved = true;
 
 			var responseAsMovie = response as Movie;
 			if (responseAsMovie != null) {
-				request = VideoScraperManager.CreateRequest(RequestMethod.GET, $@"{searchPath}/{video.ID}/release_dates", requestQueries);
-				var releaseDatesResponse = VideoScraperManager.GetResponse<ReleaseDateResponse>(request);
+				request = RequestManager.CreateRequest(RequestMethod.GET, $@"{searchPath}/{video.ID}/release_dates", requestQueries);
+				var releaseDatesResponse = RequestManager.GetResponse<ReleaseDateResponse>(request);
 				responseAsMovie.RegionReleaseDates = releaseDatesResponse.RegionReleaseDates;
 			}			
 			return response;
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Initializes this instance.
-		/// </summary>
-		public void Initialize() {
-			this.LoadConfiguration();
-		}
 		
 		#endregion
 

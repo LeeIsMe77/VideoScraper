@@ -2,15 +2,7 @@
 
 	#region Directives
 	using System;
-	using System.Collections;
-	using System.Collections.Generic;
-	using System.ComponentModel;
-	using System.Data;
-	using System.Drawing;
 	using System.IO;
-	using System.Linq;
-	using System.Text;
-	using System.Threading.Tasks;
 	using System.Windows.Forms;
 	using System.Xml;
 	using System.Xml.Serialization;
@@ -18,22 +10,24 @@
 	using VideoScraper.Core.DataContracts;
 	#endregion
 
-	public partial class Search 
+	public partial class Search
 		: Form {
 
 		#region Properties
 
-		#region VideoScraperManager
+		private ConfigurationManager _configurationManager;
 
-		private VideoScraperManager _videoScraperManager;
+		#region RequestManager
+
+		private RequestManager _requestManager;
 
 		/// <summary>
-		/// Gets the video scraper manager.
+		/// Gets the request manager.
 		/// </summary>
-		/// <value>The video scraper manager.</value>
-		public VideoScraperManager VideoScraperManager {
-			get { return _videoScraperManager ?? (_videoScraperManager = new VideoScraperManager()); }
-		} 
+		/// <value>The request manager.</value>
+		public RequestManager RequestManager {
+			get { return _requestManager ?? (_requestManager = new RequestManager(_configurationManager)); }
+		}
 
 		#endregion
 
@@ -44,8 +38,9 @@
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Search"/> class.
 		/// </summary>
-		public Search() {
+		public Search(ConfigurationManager configurationManager) {
 			InitializeComponent();
+			_configurationManager = configurationManager;
 		}
 
 		#endregion
@@ -58,7 +53,7 @@
 		/// <param name="e">A <see cref="T:System.Windows.Forms.FormClosingEventArgs" /> that contains the event data.</param>
 		protected override void OnFormClosing(FormClosingEventArgs e) {
 			base.OnFormClosing(e);
-			this.VideoScraperManager.SaveConfiguration();
+			_configurationManager.SaveConfiguration();
 		}
 
 		#endregion
@@ -93,7 +88,8 @@
 
 			var xmlSerializer = new XmlSerializer(video.GetType());
 			using (var stringWriter = new StringWriter()) {
-				using (XmlWriter writer = XmlWriter.Create(stringWriter)) {
+				
+				using (XmlWriter writer = XmlWriter.Create(stringWriter, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true })) {
 					xmlSerializer.Serialize(writer, video);
 					this.xmlText.Text = stringWriter.ToString();
 				}
@@ -101,19 +97,22 @@
 
 		}
 
+		/// <summary>
+		/// Gets the video details.
+		/// </summary>
 		private void GetVideoDetails() {
 			var videoCollection = this.videosDataGridView.DataSource as VideoCollection<Movie>;
 			if (videoCollection != null) {
 				var selectedVideo = this.videosDataGridView.SelectedRows[0].DataBoundItem as Movie;
 				if (selectedVideo == null) return;
-				videoCollection[videoCollection.IndexOf(selectedVideo)] = VideoScraperManager.GetDetails(selectedVideo); ;
+				videoCollection[videoCollection.IndexOf(selectedVideo)] = RequestManager.GetDetails(selectedVideo); ;
 			}
 
 			var tvShowCollection = this.videosDataGridView.DataSource as VideoCollection<TVShow>;
 			if (tvShowCollection != null) {
 				var selectedVideo = this.videosDataGridView.SelectedRows[0].DataBoundItem as TVShow;
 				if (selectedVideo == null) return;
-				tvShowCollection[tvShowCollection.IndexOf(selectedVideo)] = VideoScraperManager.GetDetails(selectedVideo);
+				tvShowCollection[tvShowCollection.IndexOf(selectedVideo)] = RequestManager.GetDetails(selectedVideo);
 			}
 		}
 
@@ -122,12 +121,21 @@
 		#region Control Events
 
 		/// <summary>
+		/// Handles the Click event of the closeToolStripMenuItem control.
+		/// </summary>
+		/// <param name="sender">The source of the event.</param>
+		/// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+		private void closeToolStripMenuItem_Click(object sender, EventArgs e) {
+			this.DialogResult = DialogResult.Cancel;
+		}
+
+		/// <summary>
 		/// Handles the Click event of the optionsToolStripMenuItem control.
 		/// </summary>
 		/// <param name="sender">The source of the event.</param>
 		/// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
 		private void optionsToolStripMenuItem_Click(object sender, EventArgs e) {
-			Options.Show(this, this.VideoScraperManager);
+			Options.Show(this, _configurationManager);
 		}
 
 		/// <summary>
@@ -138,11 +146,14 @@
 		private void searchButton_Click(object sender, EventArgs e) {
 			this.videosDataGridView.SelectionChanged -= this.videosDataGridView_SelectionChanged;
 			try {
-				var movies = VideoScraperManager.Search<Movie>(this.title.Text);
-
 
 				this.videosDataGridView.DataSource = null;
-				this.videosDataGridView.DataSource = movies;
+				if (this.modeMovie.Checked) {
+					this.videosDataGridView.DataSource = RequestManager.Search<Movie>(this.title.Text);
+				}
+				else {
+					this.videosDataGridView.DataSource = RequestManager.Search<TVShow>(this.title.Text);
+				}
 				this.AutoSizeColumns();
 
 				this.videosDataGridView.SelectionChanged += this.videosDataGridView_SelectionChanged;

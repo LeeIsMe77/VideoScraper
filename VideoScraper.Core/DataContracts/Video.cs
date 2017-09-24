@@ -5,7 +5,6 @@
 	using System.ComponentModel;
 	using System.Runtime.Serialization;
 	using Common;
-
 	#endregion
 
 	#region Video
@@ -86,7 +85,7 @@
 		: Video {
 
 		[DataMember(Name = @"belongs_to_collection", IsRequired = false)]
-		public BelongsToCollection BelongsToCollection { get; set; }
+		public Collection BelongsToCollection { get; set; }
 
 		[DataMember(Name = @"budget", IsRequired = false)]
 		public int Budget { get; set; }

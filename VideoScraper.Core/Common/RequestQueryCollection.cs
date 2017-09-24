@@ -15,6 +15,17 @@
 		#region Collection Management
 
 		/// <summary>
+		/// Gets the <see cref="RequestQuery"/> with the specified request query name.
+		/// </summary>
+		/// <param name="requestQueryName">Name of the request query.</param>
+		/// <returns>RequestQuery.</returns>
+		public RequestQuery this[string requestQueryName] {
+			get {
+				return this.FirstOrDefault(requestQuery => string.Compare(requestQuery.QueryName, requestQueryName, StringComparison.Ordinal) == 0);
+			}
+		}
+
+		/// <summary>
 		/// Adds the specified query name.
 		/// </summary>
 		/// <param name="queryName">Name of the query.</param>
