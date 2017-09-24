@@ -16,7 +16,7 @@
 		/// </summary>
 		/// <param name="owner">The owner.</param>
 		/// <param name="configurationManager">The video scraper manager.</param>
-		public static void Show(IWin32Window owner, ConfigurationManager configurationManager) {
+		public static void Show(IWin32Window owner, SearchProvider configurationManager) {
 			using (var form = new Options(configurationManager)) {
 				form.ShowDialog(owner);
 			}
@@ -24,7 +24,7 @@
 
 		#endregion
 
-		private readonly ConfigurationManager _configurationManager;
+		private readonly SearchProvider _configurationManager;
 
 		#region Constructor
 
@@ -32,7 +32,7 @@
 		/// Initializes a new instance of the <see cref="Options"/> class.
 		/// </summary>
 		/// <param name="configurationManager">The configuration manager.</param>
-		private Options(ConfigurationManager configurationManager) {
+		private Options(SearchProvider configurationManager) {
 			InitializeComponent();
 			_configurationManager = configurationManager;
 		}

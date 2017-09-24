@@ -18,7 +18,7 @@
 		public static int Main(string[] args) {
 			try {
 				
-				using (var form = new Search(new ConfigurationManager())) {
+				using (var form = new Search(new SearchProvider())) {
 					form.ShowDialog();
 				}
 

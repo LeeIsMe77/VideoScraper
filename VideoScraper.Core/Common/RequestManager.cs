@@ -93,7 +93,7 @@
 		#endregion
 
 		#region Properties
-		private readonly ConfigurationManager _configurationManager;
+		private readonly SearchProvider _configurationManager;
 
 		#region APIRequestQuery
 
@@ -116,7 +116,7 @@
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RequestManager"/> class.
 		/// </summary>
-		public RequestManager(ConfigurationManager configurationManager) {
+		public RequestManager(SearchProvider configurationManager) {
 			_configurationManager = configurationManager;
 		}
 

@@ -12,35 +12,17 @@
 
 	public partial class Search
 		: Form {
-
-		#region Properties
-
-		private ConfigurationManager _configurationManager;
-
-		#region RequestManager
-
-		private RequestManager _requestManager;
-
-		/// <summary>
-		/// Gets the request manager.
-		/// </summary>
-		/// <value>The request manager.</value>
-		public RequestManager RequestManager {
-			get { return _requestManager ?? (_requestManager = new RequestManager(_configurationManager)); }
-		}
-
-		#endregion
-
-		#endregion
-
+		
+		private SearchProvider _searchProvider;
+		
 		#region Constructor
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Search"/> class.
 		/// </summary>
-		public Search(ConfigurationManager configurationManager) {
+		public Search(SearchProvider searchProvider) {
 			InitializeComponent();
-			_configurationManager = configurationManager;
+			_searchProvider = searchProvider;
 		}
 
 		#endregion
@@ -53,7 +35,7 @@
 		/// <param name="e">A <see cref="T:System.Windows.Forms.FormClosingEventArgs" /> that contains the event data.</param>
 		protected override void OnFormClosing(FormClosingEventArgs e) {
 			base.OnFormClosing(e);
-			_configurationManager.SaveConfiguration();
+			_searchProvider.SaveConfiguration();
 		}
 
 		#endregion
@@ -75,6 +57,7 @@
 		/// <summary>
 		/// Generates the XML.
 		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
 		private void GenerateXml() {
 			if (this.videosDataGridView.SelectedRows.Count != 1) {
 				this.xmlText.Text = null;
@@ -105,14 +88,14 @@
 			if (videoCollection != null) {
 				var selectedVideo = this.videosDataGridView.SelectedRows[0].DataBoundItem as Movie;
 				if (selectedVideo == null) return;
-				videoCollection[videoCollection.IndexOf(selectedVideo)] = RequestManager.GetDetails(selectedVideo); ;
+				videoCollection[videoCollection.IndexOf(selectedVideo)] = _searchProvider.RequestManager.GetDetails(selectedVideo); ;
 			}
 
 			var tvShowCollection = this.videosDataGridView.DataSource as VideoCollection<TVShow>;
 			if (tvShowCollection != null) {
 				var selectedVideo = this.videosDataGridView.SelectedRows[0].DataBoundItem as TVShow;
 				if (selectedVideo == null) return;
-				tvShowCollection[tvShowCollection.IndexOf(selectedVideo)] = RequestManager.GetDetails(selectedVideo);
+				tvShowCollection[tvShowCollection.IndexOf(selectedVideo)] = _searchProvider.RequestManager.GetDetails(selectedVideo);
 			}
 		}
 
@@ -135,7 +118,7 @@
 		/// <param name="sender">The source of the event.</param>
 		/// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
 		private void optionsToolStripMenuItem_Click(object sender, EventArgs e) {
-			Options.Show(this, _configurationManager);
+			Options.Show(this, _searchProvider);
 		}
 
 		/// <summary>
@@ -149,10 +132,10 @@
 
 				this.videosDataGridView.DataSource = null;
 				if (this.modeMovie.Checked) {
-					this.videosDataGridView.DataSource = RequestManager.Search<Movie>(this.title.Text);
+					this.videosDataGridView.DataSource = _searchProvider.RequestManager.Search<Movie>(this.title.Text);
 				}
 				else {
-					this.videosDataGridView.DataSource = RequestManager.Search<TVShow>(this.title.Text);
+					this.videosDataGridView.DataSource = _searchProvider.RequestManager.Search<TVShow>(this.title.Text);
 				}
 				this.AutoSizeColumns();
 

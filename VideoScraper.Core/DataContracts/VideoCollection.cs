@@ -16,9 +16,7 @@
 	public class VideoCollection<TVideo>
 		: BindingList<TVideo>, ITypedList
 		where TVideo : Video {
-
-		private PropertyDescriptorCollection _properties;
-
+		
 		#region Methods
 
 		/// <summary>
@@ -79,11 +77,7 @@
 		/// <param name="listAccessors">An array of <see cref="T:System.ComponentModel.PropertyDescriptor" /> objects to find in the collection as bindable. This can be null.</param>
 		/// <returns>The <see cref="T:System.ComponentModel.PropertyDescriptorCollection" /> that represents the properties on each item used to bind data.</returns>
 		public PropertyDescriptorCollection GetItemProperties(PropertyDescriptor[] listAccessors) {
-			return _properties ?? (
-				_properties = this.GetView(
-					this.GetVisibleProperties()
-					)
-				);
+			return this.GetView(this.GetVisibleProperties());
 		}
 
 		/// <summary>

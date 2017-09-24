@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\ConfigurationManager.cs" />
+    <Compile Include="Common\SearchProvider.cs" />
     <Compile Include="Common\DataGridViewDisplayAttribute.cs" />
     <Compile Include="Common\DynamicPropertyDescriptor.cs" />
     <Compile Include="Common\RequestManager.cs" />

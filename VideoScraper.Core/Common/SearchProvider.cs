@@ -2,16 +2,12 @@
 
 	#region Directives
 	using System;
-	using System.Collections.Generic;
 	using System.IO;
-	using System.Linq;
-	using System.Text;
-	using System.Threading.Tasks;
 	using System.Xml.Linq;
 
 	#endregion
 
-	public class ConfigurationManager {
+	public class SearchProvider {
 
 		#region Constants
 		private const string CONFIGURATION_FILE_NAME = "VideoScraper.xml";
@@ -44,18 +40,32 @@
 
 		#endregion
 
+		#region RequestManager
+
+		private RequestManager _requestManager;
+
+		/// <summary>
+		/// Gets the request manager.
+		/// </summary>
+		/// <value>The request manager.</value>
+		public RequestManager RequestManager {
+			get { return _requestManager ?? (_requestManager = new RequestManager(this)); }
+		}
+
+		#endregion
+
 		#endregion
 
 		#region Constructor
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ConfigurationManager"/> class.
+		/// Initializes a new instance of the <see cref="SearchProvider"/> class.
 		/// </summary>
-		public ConfigurationManager() {
+		public SearchProvider() {
 			if (!File.Exists(this.ConfigurationFilePath)) return;
 			try {
 				var configuration = XElement.Load(this.ConfigurationFilePath);
-				this.APIKey = configuration.SafeAttributeValue(nameof(ConfigurationManager.APIKey), this.APIKey);
+				this.APIKey = configuration.SafeAttributeValue(nameof(SearchProvider.APIKey), this.APIKey);
 			}
 			catch { }
 		}
@@ -75,7 +85,7 @@
 
 				new XElement(
 					nameof(RequestManager),
-					new XAttribute(nameof(ConfigurationManager.APIKey), this.APIKey)
+					new XAttribute(nameof(SearchProvider.APIKey), this.APIKey)
 					)
 					.Save(this.ConfigurationFilePath, SaveOptions.None);
 			}
